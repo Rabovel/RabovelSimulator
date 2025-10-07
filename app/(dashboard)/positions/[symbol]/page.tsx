@@ -1,10 +1,11 @@
 // app/positions/[symbol]/page.tsx
 "use client";
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Head from 'next/head';
 
 export default function PositionDetail() {
   const { symbol } = useParams();
+  const router = useRouter();
 
   // Example data
   const position = {
@@ -27,7 +28,8 @@ export default function PositionDetail() {
       </Head>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <h1 className="text-2xl font-bold mb-4">{symbol} Position Details</h1>
-        <div className="bg-white rounded-lg shadow p-6">
+        
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
           <p>Type: {position.type}</p>
           <p>Strike: {position.strike}</p>
           <p>Expiration: {position.expiration}</p>
@@ -38,6 +40,13 @@ export default function PositionDetail() {
             P/L: {position.direction === 'positive' ? '+' : ''}${Math.abs(position.pl)}
           </p>
         </div>
+
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          ← Back to Dashboard
+        </button>
       </div>
     </div>
   );
