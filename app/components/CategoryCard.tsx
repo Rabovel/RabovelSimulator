@@ -1,44 +1,33 @@
-// app/components/CategoryCard.tsx
-"use client";
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { LucideIcon } from "lucide-react";
 
 interface CategoryCardProps {
   title: string;
-  image: string; // Path to the transparent image
   description: string;
-  category: string; // Used for routing
+  category: string;
+  icon: LucideIcon;
 }
 
-export function CategoryCard({ title, image, description, category }: CategoryCardProps) {
-  const router = useRouter();
-
-  const handleClick = () => {
-    router.push(`/categories/${category.toLowerCase()}`);
-  };
-
+export function CategoryCard({
+  title,
+  description,
+  category,
+  icon: Icon,
+}: CategoryCardProps) {
   return (
-    <div
-      onClick={handleClick}
-      className="bg-white rounded-lg shadow hover:shadow-lg hover:bg-gray-100 transition-all duration-300 cursor-pointer group overflow-hidden"
-    >
-      {/* Image Container */}
-      <div className="relative w-full h-48">
-        <Image
-          src="/images/anima.jpg"
-          alt={`${title} category`}
-          fill
-          style={{ objectFit: 'cover' }}
-          className="group-hover:scale-110 transition-transform duration-300"
-        />
-        {/* Content Container */}
-        <div className="absolute  inset-0 flex flex-col items-center justify-center text-center bg-opacity-50 p-4">
-          <h3 className="text-lg   font-semibold mb-2">{title}</h3>
-          <p className="text-sm ">{description}</p>
+    <Link href={`/categories/${category}`}>
+      <motion.div
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+        className="bg-gray-50 hover:bg-white transition-all border border-gray-100 shadow-sm hover:shadow-md rounded-2xl p-5 flex flex-col items-center text-center"
+      >
+        <div className="p-3 bg-blue-100 rounded-full mb-3">
+          <Icon className="w-6 h-6 text-blue-600" /> {/* ✅ fixed */}
         </div>
-      </div>
-
-      
-    </div>
+        <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-500">{description}</p>
+      </motion.div>
+    </Link>
   );
 }
