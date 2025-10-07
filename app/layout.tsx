@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Trading Dashboard",
+  title: "Rabovel Simulator Dashboard",
   description: "Manage your portfolio, funds, and transactions with ease",
 };
 
