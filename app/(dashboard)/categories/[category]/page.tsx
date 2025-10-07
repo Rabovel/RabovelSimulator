@@ -7,41 +7,66 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TableHeader } from "@/components/TableHeader";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  Sprout,
+  Building2,
+  ShieldCheck,
+  Cpu,
+  Landmark,
+} from "lucide-react";
 
 // Sample stock data
-const categoryStocks: {
-  [key: string]: { symbol: string; price: number; change: string }[];
-} = {
-  agro: [
-    { symbol: "OKOMUOIL", price: 150.0, change: "+2.5%" },
-    { symbol: "PRESCO", price: 200.5, change: "-1.2%" },
-    { symbol: "FLOURMILL", price: 35.75, change: "+0.8%" },
-  ],
-  "real-estate": [
-    { symbol: "UPDC", price: 5.2, change: "+1.5%" },
-    { symbol: "WAPCO", price: 28.0, change: "-0.9%" },
-    { symbol: "SKYAVN", price: 450.0, change: "+3.1%" },
-  ],
-  insurance: [
-    { symbol: "AIICO", price: 1.1, change: "+1.0%" },
-    { symbol: "NEM", price: 4.5, change: "-0.5%" },
-    { symbol: "CUSTODIAN", price: 7.8, change: "+2.3%" },
-  ],
-  tech: [
-    { symbol: "MTNN", price: 250.0, change: "+2.0%" },
-    { symbol: "AIRTELAFRI", price: 900.0, change: "+1.7%" },
-    { symbol: "CWG", price: 2.3, change: "-0.8%" },
-  ],
-  banking: [
-    { symbol: "ZENITHBANK", price: 30.75, change: "+0.8%" },
-    { symbol: "GUARANTY", price: 35.2, change: "-2.2%" },
-    { symbol: "ACCESS", price: 18.5, change: "+1.1%" },
-  ],
-};
+const categoryStocks=  [
+  {
+    title: "Agro Stocks",
+    icon: Sprout,
+    description: "Agricultural companies and commodities",
+    category: "agro",
+    symbol: "AGR",
+    price: 120.45,
+    change: "+2.15",
+  },
+  {
+    title: "Real Estate",
+    icon: Building2,
+    description: "Property development & management",
+    category: "real-estate",
+    symbol: "REA",
+    price: 305.10,
+    change: "-1.20",
+  },
+  {
+    title: "Insurance",
+    icon: ShieldCheck,
+    description: "Insurance providers & services",
+    category: "insurance",
+    symbol: "INS",
+    price: 89.75,
+    change: "+0.80",
+  },
+  {
+    title: "Tech Stocks",
+    icon: Cpu,
+    description: "Technology & innovation companies",
+    category: "tech",
+    symbol: "TEC",
+    price: 450.00,
+    change: "+5.00",
+  },
+  {
+    title: "Banking",
+    icon: Landmark,
+    description: "Financial institutions & banks",
+    category: "banking",
+    symbol: "BNK",
+    price: 210.30,
+    change: "-0.50",
+  },
+];
 
 export default function CategoryDetail() {
   const { category } = useParams();
-  const stocks = categoryStocks[category as string] || [];
+  const stocks = categoryStocks.filter((stock) => stock.category === category) || [];
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">

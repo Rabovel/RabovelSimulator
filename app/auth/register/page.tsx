@@ -1,33 +1,45 @@
-// app/login/page.tsx
+// app/register/page.tsx
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, Mail } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 //import Image from "next/image";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
-    if (!email || !password) {
+    // Simple validation
+    if (!fullName || !email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
       return;
     }
 
-    // Mock authentication logic
-    if (email === "john.doe@example.com" && password === "password123") {
-      localStorage.setItem("authToken", "mock_token_12345");
-      router.push("/");
-    } else {
-      setError("Invalid credentials. Try again.");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
     }
+
+    // Mock registration process
+    const mockUser = {
+      fullName,
+      email,
+      token: "mock_token_" + Date.now(),
+    };
+
+    localStorage.setItem("authToken", mockUser.token);
+    localStorage.setItem("user", JSON.stringify(mockUser));
+
+    router.push("/dashboard");
   };
 
   return (
@@ -50,7 +62,7 @@ export default function LoginPage() {
             /> */}
             <h1 className="text-2xl font-bold text-blue-600">Rabovel</h1>
           </div>
-          <p className="text-gray-500 text-sm">Sign in to continue</p>
+          <p className="text-gray-500 text-sm">Create your account</p>
         </div>
 
         {/* Error Message */}
@@ -60,8 +72,23 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Register Form */}
+        <form onSubmit={handleRegister} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <div className="mt-1 flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+              <User size={18} className="text-gray-400 mr-2" />
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full outline-none text-gray-700"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <div className="mt-1 flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
@@ -92,20 +119,35 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <div className="mt-1 flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+              <Lock size={18} className="text-gray-400 mr-2" />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full outline-none text-gray-700"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
-            Sign In
+            Create Account
           </button>
         </form>
 
-        {/* Footer links */}
+        {/* Footer Links */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Don’t have an account?{" "}
-            <a href="/auth/register" className="text-blue-600 hover:underline">
-              Sign up
+            Already have an account?{" "}
+            <a href="/auth/login" className="text-blue-600 hover:underline">
+              Sign in
             </a>
           </p>
         </div>
