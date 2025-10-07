@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,7 +11,7 @@ export function Header() {
   const [isTradeOpen, setIsTradeOpen] = useState(false);
 
   const navItems = [
-    { name: "Dashboard", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
     { name: "Funds", path: "/funds" },
     { name: "Orders", path: "/orders" },
     { name: "Profile", path: "/profile" },
@@ -20,12 +21,18 @@ export function Header() {
     <header className="bg-white shadow relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          <Image
+            src="/Rabovel.webp"
+            alt="Rabovel Logo"
+            width={150}
+            height={40}
+            priority
+            className="mb-3"
+          />
           <div
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
             className="text-xl font-bold text-blue-600 cursor-pointer"
           >
-            Rabovel
           </div>
 
           {/* Mobile menu button */}

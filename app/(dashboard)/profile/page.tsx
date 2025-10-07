@@ -36,7 +36,7 @@ export default function ProfilePage() {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     sessionStorage.clear();
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   const kycBadge = {
@@ -126,8 +126,8 @@ export default function ProfilePage() {
                   onClick={handleLogout}
                   className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1"
                 >
-                  <LogOut size={14} />
-                  Logout
+                  <LogOut size={20} />
+                  
                 </button>
               </>
             )}

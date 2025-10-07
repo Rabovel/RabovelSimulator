@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, Lock, User } from "lucide-react";
-//import Image from "next/image";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -53,14 +53,14 @@ export default function RegisterPage() {
         {/* Logo / Header */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center space-x-2 mb-2">
-            {/* <Image
-              src="/logo.svg"
+            <Image
+              src="/Rabovel.webp"
               alt="TradeFlow Logo"
-              width={36}
-              height={36}
+              width={200}
+              height={200}
               className="rounded"
-            /> */}
-            <h1 className="text-2xl font-bold text-blue-600">Rabovel</h1>
+            />
+            {/* <h1 className="text-2xl font-bold text-blue-600">Rabovel</h1> */}
           </div>
           <p className="text-gray-500 text-sm">Create your account</p>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Head from "next/head";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -37,6 +37,7 @@ export default function Funds() {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState<null | "deposit" | "withdraw" | "transfer">(null);
   const [formData, setFormData] = useState({ amount: "", method: "Bank Transfer", account: "" });
+  const [selectedTransaction, setSelectedTransaction] = useState<null | typeof transactionHistory[number]>(null);
 
   const itemsPerPage = 5;
   const filters = ["All", "Deposits", "Withdrawals", "Pending"];
@@ -203,7 +204,12 @@ export default function Funds() {
                       </td>
                       <td className="px-4 py-3 text-gray-600">{tx.method}</td>
                       <td className="px-4 py-3">
-                        <button className="text-blue-600 hover:underline text-xs">View</button>
+                        <button
+                          onClick={() => setSelectedTransaction(tx)}
+                          className="text-blue-600 hover:underline text-xs"
+                        >
+                          View
+                        </button>
                       </td>
                     </motion.tr>
                   ))}
@@ -242,89 +248,146 @@ export default function Funds() {
         </div>
       </main>
 
-      {/* Modal */}
-      {modalType && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      {/* Deposit / Withdraw / Transfer Modal */}
+      <AnimatePresence>
+        {modalType && (
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center z-50"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold capitalize text-gray-800">
-                {modalType} Funds
-              </h3>
-              <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Amount</label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleFormChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold capitalize text-gray-800">
+                  {modalType} Funds
+                </h3>
+                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-                <select
-                  name="method"
-                  value={formData.method}
-                  onChange={handleFormChange}
-                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Wire">Wire</option>
-                </select>
-              </div>
-              {modalType === "transfer" && (
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Destination Account</label>
+                  <label className="block text-sm font-medium text-gray-700">Amount</label>
                   <input
-                    type="text"
-                    name="account"
-                    value={formData.account}
+                    type="number"
+                    name="amount"
+                    value={formData.amount}
                     onChange={handleFormChange}
-                    placeholder="Enter account number"
                     required
+                    min="0"
+                    step="0.01"
                     className="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-              )}
-              <div className="mt-6 flex justify-end space-x-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Payment Method</label>
+                  <select
+                    name="method"
+                    value={formData.method}
+                    onChange={handleFormChange}
+                    className="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Wire">Wire</option>
+                  </select>
+                </div>
+                {modalType === "transfer" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Destination Account</label>
+                    <input
+                      type="text"
+                      name="account"
+                      value={formData.account}
+                      onChange={handleFormChange}
+                      placeholder="Enter account number"
+                      required
+                      className="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+                <div className="mt-6 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setModalType(null)}
+                    className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                  >
+                    Confirm {modalType}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* View Transaction Modal */}
+      <AnimatePresence>
+        {selectedTransaction && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Transaction Details</h3>
                 <button
-                  type="button"
-                  onClick={() => setModalType(null)}
-                  className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100"
+                  onClick={() => setSelectedTransaction(null)}
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                >
-                  Confirm {modalType}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
+
+              <div className="space-y-3 text-sm">
+                <DetailRow label="Transaction ID" value={selectedTransaction.id} />
+                <DetailRow label="Date" value={selectedTransaction.date} />
+                <DetailRow label="Type" value={selectedTransaction.type} />
+                <DetailRow
+                  label="Amount"
+                  value={`$${selectedTransaction.amount.toFixed(2)}`}
+                />
+                <DetailRow label="Status" value={selectedTransaction.status} />
+                <DetailRow label="Method" value={selectedTransaction.method} />
+              </div>
+
+              <div className="mt-6 text-right">
+                <button
+                  onClick={() => setSelectedTransaction(null)}
+                  className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>
   );
 }
 
-// Reusable ActionButton
 function ActionButton({
   color,
   icon,
@@ -349,5 +412,14 @@ function ActionButton({
       {icon}
       <span className="mt-2 text-sm font-medium">{label}</span>
     </button>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between border-b border-gray-100 pb-1">
+      <span className="text-gray-500 font-medium">{label}</span>
+      <span className="text-gray-800">{value}</span>
+    </div>
   );
 }
