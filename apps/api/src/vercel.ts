@@ -4,12 +4,19 @@ import "./config";
 import app from "./app";
 import { wakeDatabase } from "@rabovel/db";
 
-let initialized = false;
+let dbReady = false;
+let waking: Promise<boolean> | null = null;
 
 async function ensureReady() {
-  if (initialized) return;
-  await wakeDatabase();
-  initialized = true;
+  if (dbReady) return;
+  if (!waking) {
+    waking = wakeDatabase().then((ok) => {
+      dbReady = ok;
+      waking = null;
+      return ok;
+    });
+  }
+  await waking;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

@@ -31,9 +31,12 @@ export function errorHandler(
   }
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    if (["P1001", "P1002", "P1017"].includes(err.code)) {
+    if (["P1001", "P1002", "P1017", "P2028"].includes(err.code)) {
       return res.status(503).json({
-        error: "Database temporarily unavailable. Please try again.",
+        error:
+          err.code === "P2028"
+            ? "Database busy. Please try again in a moment."
+            : "Database temporarily unavailable. Please try again.",
         code: err.code,
       });
     }

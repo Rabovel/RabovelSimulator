@@ -92,7 +92,7 @@ After seeding, admin: `admin@rabovel.com` / `password123` → `/admin/users` (KY
 | KYC | `GET /api/kyc/status`, `POST /api/kyc/submit` |
 | Admin KYC | `GET /api/admin/kyc`, `PATCH /api/admin/kyc/:id/approve`, `PATCH /api/admin/kyc/:id/reject` |
 | Admin Users | `GET /api/admin/users/metrics` |
-| Wallet | `GET /api/wallet`, `POST /api/wallet/deposit/initiate`, `GET /api/wallet/deposit/:ref/status`, `GET /api/wallet/transactions` |
+| Wallet | `GET /api/wallet`, `POST /api/wallet/deposit/initiate`, `POST /api/wallet/withdraw`, `GET /api/wallet/deposit/:ref/status`, `GET /api/wallet/transactions` |
 | Webhooks | `POST /api/webhooks/flutterwave` |
 | Portfolio | `GET /api/portfolio/market`, `GET /api/portfolio/holdings`, `POST /api/portfolio/purchase` |
 | Staking | `GET /api/staking`, `POST /api/staking/create` |

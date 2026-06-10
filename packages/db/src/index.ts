@@ -1,4 +1,24 @@
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import { Prisma, PrismaClient } from "@prisma/client";
+
+function loadEnv() {
+  const candidates = [
+    path.resolve(process.cwd(), "apps/api/.env"),
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(__dirname, "../../../apps/api/.env"),
+    path.resolve(__dirname, "../.env"),
+  ];
+  for (const envPath of candidates) {
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      return;
+    }
+  }
+}
+
+loadEnv();
 
 const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof createClient> | undefined;
@@ -17,6 +37,17 @@ function isConnectionClosedError(err: unknown): boolean {
     msg.includes("server has closed") ||
     msg.includes("broken pipe") ||
     msg.includes("connection reset")
+  );
+}
+
+function isUnreachableDbError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  return (
+    msg.includes("can't reach database server") ||
+    msg.includes("connection timed out") ||
+    msg.includes("econnrefused") ||
+    msg.includes("enotfound")
   );
 }
 
@@ -55,9 +86,9 @@ function createClient() {
       }
     });
     base.$on("error", (e) => {
-      if (!e.message.includes("Closed")) {
-        console.error(e.message);
-      }
+      if (e.message.includes("Closed")) return;
+      if (isUnreachableDbError({ message: e.message })) return;
+      console.error(e.message);
     });
   }
 
@@ -104,7 +135,7 @@ export async function reconnectDatabase() {
   await base.$connect();
 }
 
-export async function wakeDatabase(retries = 4, timeoutMs = 15_000) {
+export async function wakeDatabase(retries = 6, timeoutMs = 25_000) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await Promise.race([
@@ -113,14 +144,24 @@ export async function wakeDatabase(retries = 4, timeoutMs = 15_000) {
           setTimeout(() => reject(new Error("timeout")), timeoutMs)
         ),
       ]);
+      if (attempt > 1) {
+        console.log("Database connected (Neon woke up)");
+      }
       return true;
     } catch {
       if (attempt < retries) {
         await reconnectDatabase();
-        await new Promise((r) => setTimeout(r, 2000 * attempt));
+        const delay = Math.min(3000 * attempt, 12_000);
+        console.warn(
+          `Database not ready (attempt ${attempt}/${retries}) — retrying in ${delay / 1000}s…`
+        );
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   }
+  console.error(
+    "Database unreachable. If using Neon, open the dashboard to resume the project or verify DATABASE_URL in apps/api/.env"
+  );
   return false;
 }
 
@@ -135,10 +176,9 @@ export function startDatabaseKeepalive(intervalMs = KEEPALIVE_MS) {
       await prisma.$queryRaw`SELECT 1`;
     } catch {
       try {
-        await reconnectDatabase();
-        await prisma.$queryRaw`SELECT 1`;
+        await wakeDatabase(3, 20_000);
       } catch {
-        // next request or keepalive will retry
+        // next keepalive will retry
       }
     }
   }, intervalMs);

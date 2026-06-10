@@ -7,11 +7,10 @@ import {
 } from "@tanstack/react-query";
 import { api } from "./api";
 import { queryKeys } from "./query-keys";
-import { useAuth } from "./auth";
+import { useAuthStore } from "@/stores/auth-store";
 
 function useToken() {
-  const { token } = useAuth();
-  return token;
+  return useAuthStore((s) => s.token);
 }
 
 export function useSummary() {
@@ -158,6 +157,24 @@ export function useInitiateDeposit() {
   return useMutation({
     mutationFn: (body: { amount: number; walletType?: string }) =>
       api.initiateDeposit(token!, body),
+  });
+}
+
+export function useWithdraw() {
+  const token = useToken();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      amount: number;
+      accountNumber: string;
+      bankName: string;
+      accountName: string;
+    }) => api.withdraw(token!, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wallets });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.summary });
+    },
   });
 }
 

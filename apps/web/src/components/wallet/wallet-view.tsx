@@ -12,6 +12,7 @@ import {
   ExternalLink,
   ArrowDownLeft,
   ArrowUpRight,
+  Building2,
   Gift,
   Layers,
   Shield,
@@ -26,6 +27,7 @@ import {
   useTransactions,
   useInitiateDeposit,
   useDepositStatus,
+  useWithdraw,
 } from "@/lib/queries";
 import { queryKeys } from "@/lib/query-keys";
 import { formatCurrency } from "@/lib/utils";
@@ -49,7 +51,24 @@ const WALLET_OPTIONS = [
   },
 ] as const;
 
-const TX_FILTERS = ["ALL", "DEPOSIT", "PURCHASE", "REWARD"] as const;
+const TX_FILTERS = ["ALL", "DEPOSIT", "WITHDRAWAL", "PURCHASE", "REWARD"] as const;
+
+const NIGERIAN_BANKS = [
+  "Access Bank",
+  "GTBank",
+  "Zenith Bank",
+  "First Bank",
+  "UBA",
+  "Kuda",
+  "Opay",
+  "Palmpay",
+  "Stanbic IBTC",
+  "Fidelity Bank",
+  "Union Bank",
+  "Sterling Bank",
+  "Wema Bank",
+  "Polaris Bank",
+];
 
 function statusBadge(status: string) {
   const map: Record<string, "default" | "success" | "warning" | "danger"> = {
@@ -76,6 +95,7 @@ function txIcon(type: string) {
 
 function txIconStyle(type: string) {
   if (type === "DEPOSIT" || type === "REWARD") return "bg-accent/15 text-accent";
+  if (type === "WITHDRAWAL") return "bg-warning/15 text-warning";
   if (type === "PURCHASE" || type === "SALE") return "bg-primary/15 text-primary";
   return "bg-surface-hover text-muted";
 }
@@ -197,7 +217,8 @@ function DepositStatusBanner({
 
 function TransactionRow({ tx }: { tx: Transaction }) {
   const Icon = txIcon(tx.type);
-  const isCredit = tx.type === "DEPOSIT" || tx.type === "REWARD" || tx.type === "SALE";
+  const isCredit =
+    tx.type === "DEPOSIT" || tx.type === "REWARD" || tx.type === "SALE";
 
   return (
     <div className="flex items-center gap-4 py-4 group">
@@ -245,12 +266,20 @@ export function WalletView() {
   const { data: transactions = [], isLoading: txLoading } = useTransactions();
   const { data: depositResult } = useDepositStatus(depositRef);
   const initiateDeposit = useInitiateDeposit();
+  const withdraw = useWithdraw();
 
+  const [walletTab, setWalletTab] = useState<"deposit" | "withdraw">("deposit");
   const [amount, setAmount] = useState("");
   const [walletType, setWalletType] = useState<string>("PRIMARY");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [txFilter, setTxFilter] = useState<(typeof TX_FILTERS)[number]>("ALL");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const primaryWallet = wallets.find((w) => w.type === "PRIMARY");
+  const primaryBalance = Number(primaryWallet?.balance ?? 0);
 
   const pollStatus = depositResult?.status ?? null;
   const polling = !!depositRef && pollStatus === "PENDING";
@@ -277,6 +306,26 @@ export function WalletView() {
     }
   }, [pollStatus, queryClient, router]);
 
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    try {
+      await withdraw.mutateAsync({
+        amount: parseFloat(amount),
+        accountNumber,
+        bankName,
+        accountName: accountName.trim(),
+      });
+      setSuccess("Withdrawal processed. Funds are on the way to your bank account.");
+      setAmount("");
+      setAccountNumber("");
+      setAccountName("");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Withdrawal failed");
+    }
+  };
+
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -292,16 +341,24 @@ export function WalletView() {
     }
   };
 
-  const isBusy = initiateDeposit.isPending || polling;
+  const isBusy =
+    initiateDeposit.isPending || withdraw.isPending || polling;
   const parsedAmount = parseFloat(amount) || 0;
   const amountValid = parsedAmount >= 100;
+  const withdrawAmountValid =
+    parsedAmount >= 100 && parsedAmount <= primaryBalance;
+  const withdrawFormValid =
+    withdrawAmountValid &&
+    accountNumber.length === 10 &&
+    bankName.length >= 2 &&
+    accountName.trim().length >= 2;
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
       <header className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Wallet</h1>
         <p className="text-muted mt-1.5 text-sm sm:text-base">
-          Manage your NGN balances, deposit funds, and track activity.
+          Manage your NGN balances, deposit or withdraw funds, and track activity.
         </p>
       </header>
 
@@ -326,6 +383,41 @@ export function WalletView() {
       <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
         <section className="lg:col-span-2 space-y-6">
           <div className="bg-surface border border-border rounded-2xl p-6 shadow-sm">
+            <div className="flex gap-1 p-1 rounded-xl bg-surface-hover mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setWalletTab("deposit");
+                  setError("");
+                }}
+                className={cn(
+                  "flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors",
+                  walletTab === "deposit"
+                    ? "bg-surface text-foreground shadow-sm"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                Deposit
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setWalletTab("withdraw");
+                  setError("");
+                }}
+                className={cn(
+                  "flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors",
+                  walletTab === "withdraw"
+                    ? "bg-surface text-foreground shadow-sm"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                Withdraw
+              </button>
+            </div>
+
+            {walletTab === "deposit" ? (
+            <>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-primary" />
@@ -436,6 +528,127 @@ export function WalletView() {
                 You&apos;ll be redirected to Flutterwave to complete payment securely.
               </p>
             </div>
+            </>
+            ) : (
+            <>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">Withdraw funds</h2>
+                <p className="text-xs text-muted">
+                  Primary wallet · Available {formatCurrency(primaryBalance)}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleWithdraw} className="space-y-5">
+              <Input
+                label="Bank name"
+                list="nigerian-banks"
+                placeholder="e.g. GTBank"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                required
+                disabled={isBusy}
+              />
+              <datalist id="nigerian-banks">
+                {NIGERIAN_BANKS.map((bank) => (
+                  <option key={bank} value={bank} />
+                ))}
+              </datalist>
+
+              <Input
+                label="Account number"
+                type="text"
+                inputMode="numeric"
+                placeholder="0123456789"
+                value={accountNumber}
+                onChange={(e) =>
+                  setAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 10))
+                }
+                hint="10-digit NUBAN account number"
+                required
+                disabled={isBusy}
+              />
+
+              <Input
+                label="Account name"
+                placeholder="Name on bank account"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                required
+                disabled={isBusy}
+              />
+
+              <div>
+                <p className="text-sm font-medium mb-3">Quick amount</p>
+                <div className="flex flex-wrap gap-2">
+                  {QUICK_AMOUNTS.filter((q) => q <= primaryBalance).map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => setAmount(String(q))}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors",
+                        amount === String(q)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted hover:border-primary/40 hover:text-foreground"
+                      )}
+                    >
+                      ₦{q.toLocaleString("en-NG")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Input
+                label="Withdrawal amount (NGN)"
+                type="number"
+                min="100"
+                max={primaryBalance}
+                step="1"
+                placeholder="e.g. 5000"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                hint={`Minimum ₦100 · Maximum ${formatCurrency(primaryBalance)}`}
+                required
+                disabled={isBusy || primaryBalance < 100}
+              />
+
+              {error && <AlertBanner>{error}</AlertBanner>}
+
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isBusy || !withdrawFormValid}
+                className="w-full gap-2"
+              >
+                {withdraw.isPending ? (
+                  <>
+                    <Spinner />
+                    Processing withdrawal…
+                  </>
+                ) : (
+                  <>
+                    Withdraw to bank
+                    <ArrowUpRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 flex items-start gap-3 rounded-xl bg-surface-hover/80 border border-border/60 p-4">
+              <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-muted leading-relaxed">
+                Withdrawals are processed from your primary wallet only. KYC approval
+                is required. Funds are typically sent within 1–2 business days.
+              </p>
+            </div>
+            </>
+            )}
           </div>
         </section>
 

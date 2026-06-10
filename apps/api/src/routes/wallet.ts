@@ -9,12 +9,22 @@ import { logAudit } from "../utils/audit";
 import { config, isFlutterwaveConfigured } from "../config";
 import { initializePayment, verifyPayment } from "../services/flutterwave";
 import { completeDeposit, generateDepositReference } from "../services/deposit";
+import { processWithdrawal } from "../services/withdrawal";
 
 const router = Router();
 
 const depositSchema = z.object({
   amount: z.number().positive().min(100).max(10_000_000),
   walletType: z.enum(["PRIMARY", "TRADING"]).default("PRIMARY"),
+});
+
+const withdrawSchema = z.object({
+  amount: z.number().positive().min(100).max(10_000_000),
+  accountNumber: z
+    .string()
+    .regex(/^\d{10}$/, "Account number must be 10 digits"),
+  bankName: z.string().min(2).max(100),
+  accountName: z.string().min(2).max(120),
 });
 
 router.use(authenticate, requireUser);
@@ -102,6 +112,36 @@ router.post("/deposit/initiate", validate(depositSchema), async (req, res, next)
       reference,
       paymentUrl: payment.data.link,
       publicKey: config.flutterwave.publicKey,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/withdraw", validate(withdrawSchema), async (req, res, next) => {
+  try {
+    const { amount, accountNumber, bankName, accountName } = req.body;
+
+    const kyc = await prisma.kyc.findUnique({
+      where: { userId: req.user!.userId },
+    });
+    if (kyc?.status !== "APPROVED") {
+      throw new AppError(403, "KYC approval required before withdrawing");
+    }
+
+    const result = await processWithdrawal({
+      userId: req.user!.userId,
+      amount,
+      accountNumber,
+      bankName,
+      accountName,
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({
+      transaction: result.transaction,
+      wallet: result.wallet,
+      message: "Withdrawal processed successfully",
     });
   } catch (err) {
     next(err);

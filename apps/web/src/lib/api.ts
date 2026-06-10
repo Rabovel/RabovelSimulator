@@ -88,6 +88,21 @@ export const api = {
   wallets: (token: string) =>
     request<{ wallets: Wallet[] }>("/api/wallet", {}, token),
 
+  withdraw: (
+    token: string,
+    body: {
+      amount: number;
+      accountNumber: string;
+      bankName: string;
+      accountName: string;
+    }
+  ) =>
+    request<{
+      transaction: Transaction;
+      wallet: Wallet;
+      message: string;
+    }>("/api/wallet/withdraw", { method: "POST", body: JSON.stringify(body) }, token),
+
   initiateDeposit: (token: string, body: { amount: number; walletType?: string }) =>
     request<{
       transaction: Transaction;

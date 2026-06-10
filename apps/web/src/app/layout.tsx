@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@/lib/auth";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -22,9 +21,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>
-          <AuthProvider>{children}</AuthProvider>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
