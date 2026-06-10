@@ -58,6 +58,27 @@ export const api = {
   me: (token: string) =>
     request<{ user: User & { kyc?: { status: string } } }>("/api/auth/me", {}, token),
 
+  mfaSetup: (token: string) =>
+    request<{ secret: string; qrCode: string }>(
+      "/api/auth/mfa/setup",
+      { method: "POST" },
+      token
+    ),
+
+  mfaEnable: (token: string, body: { token: string }) =>
+    request<{ message: string }>(
+      "/api/auth/mfa/enable",
+      { method: "POST", body: JSON.stringify(body) },
+      token
+    ),
+
+  mfaDisable: (token: string, body: { password: string; token: string }) =>
+    request<{ message: string }>(
+      "/api/auth/mfa/disable",
+      { method: "POST", body: JSON.stringify(body) },
+      token
+    ),
+
   kycStatus: (token: string) =>
     request<{ kyc: Kyc }>("/api/kyc/status", {}, token),
 

@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
+
+authenticator.options = { window: 1 };
 import { z } from "zod";
 import { prisma } from "@rabovel/db";
 import { config } from "../config";
@@ -142,6 +144,14 @@ router.get("/me", authenticate, async (req, res, next) => {
 
 router.post("/mfa/setup", authenticate, async (req, res, next) => {
   try {
+    const existing = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      select: { mfaEnabled: true },
+    });
+    if (existing?.mfaEnabled) {
+      throw new AppError(400, "MFA is already enabled. Disable it first to set up again.");
+    }
+
     const secret = authenticator.generateSecret();
     const otpauth = authenticator.keyuri(
       req.user!.email,
@@ -185,6 +195,44 @@ router.post(
 
       await logAudit("MFA_ENABLED", user.id, {}, req.ip);
       res.json({ message: "MFA enabled successfully" });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/mfa/disable",
+  authenticate,
+  validate(
+    z.object({
+      password: z.string(),
+      token: z.string().length(6),
+    })
+  ),
+  async (req, res, next) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user!.userId },
+      });
+      if (!user?.mfaEnabled) throw new AppError(400, "MFA is not enabled");
+
+      const validPassword = await bcrypt.compare(req.body.password, user.passwordHash);
+      if (!validPassword) throw new AppError(401, "Invalid password");
+
+      const validMfa = authenticator.verify({
+        token: req.body.token,
+        secret: user.mfaSecret!,
+      });
+      if (!validMfa) throw new AppError(400, "Invalid MFA token");
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { mfaEnabled: false, mfaSecret: null },
+      });
+
+      await logAudit("MFA_DISABLED", user.id, {}, req.ip);
+      res.json({ message: "MFA disabled successfully" });
     } catch (err) {
       next(err);
     }

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   UserCog,
   Users,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -24,6 +25,7 @@ const userNav = [
   { href: "/staking", label: "Staking", icon: Layers },
   { href: "/rewards", label: "Rewards", icon: Gift },
   { href: "/kyc", label: "KYC", icon: ShieldCheck },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const adminNav = [

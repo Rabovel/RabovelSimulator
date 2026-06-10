@@ -22,6 +22,9 @@ import cronRoutes from "./routes/cron";
 
 const app = express();
 
+// Required when API runs behind Next.js / Vercel proxy (sets X-Forwarded-For)
+app.set("trust proxy", 1);
+
 app.use(helmet());
 const devOrigins = [
   "http://localhost:3000",
