@@ -14,7 +14,8 @@
     "db:generate": "npm run generate -w @rabovel/db",
     "db:push": "npm run push -w @rabovel/db",
     "db:migrate": "npm run migrate -w @rabovel/db",
-    "db:seed": "npm run seed -w @rabovel/db"
+    "db:seed": "npm run seed -w @rabovel/db",
+    "vercel:deploy": "vercel --cwd apps/web --prod"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

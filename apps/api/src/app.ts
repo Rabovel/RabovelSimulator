@@ -18,6 +18,7 @@ import webhooksRoutes from "./routes/webhooks";
 import adminKycRoutes from "./routes/admin/kyc";
 import adminUsersRoutes from "./routes/admin/users";
 import adminJobsRoutes from "./routes/admin/jobs";
+import cronRoutes from "./routes/cron";
 
 const app = express();
 
@@ -58,6 +59,11 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "rabovel-api" });
 });
 
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok", service: "rabovel-api" });
+});
+
+app.use("/api/cron", cronRoutes);
 app.use("/api/webhooks", webhooksRoutes);
 app.use("/api/admin/kyc", adminKycRoutes);
 app.use("/api/admin/users", adminUsersRoutes);

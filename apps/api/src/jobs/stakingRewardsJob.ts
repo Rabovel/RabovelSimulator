@@ -29,6 +29,10 @@ async function runJob() {
 }
 
 export function startStakingRewardsJob() {
+  if (process.env.VERCEL === "1") {
+    console.log("[staking-rewards] Interval job skipped on Vercel (use cron)");
+    return;
+  }
   if (!config.stakingRewards.enabled) {
     console.log("[staking-rewards] Job disabled");
     return;

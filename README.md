@@ -100,6 +100,60 @@ After seeding, admin: `admin@rabovel.com` / `password123` → `/admin/users` (KY
 | Analytics | `GET /api/analytics/summary` |
 | Notifications | `GET /api/notifications` |
 
+## Deploy on Vercel
+
+The Next.js app and Express API deploy together from `apps/web` (API runs as a serverless function).
+
+### 1. Import repository
+
+1. Push this repo to GitHub.
+2. In [Vercel](https://vercel.com), **Add New Project** → import the repo.
+3. Set **Root Directory** to `apps/web` (required — Vercel reads `apps/web/vercel.json`).
+
+**CLI deploy** (from repo root):
+
+```bash
+npm run vercel:deploy
+```
+
+Do **not** run `vercel --prod` from the repo root without Root Directory set — it will fail looking for a `public` folder.
+
+### 2. Environment variables
+
+Add these in the Vercel project **Settings → Environment Variables**:
+
+| Variable | Notes |
+|----------|--------|
+| `DATABASE_URL` | Neon pooled URL (`?pgbouncer=true&connect_timeout=30&pool_timeout=0`) |
+| `DIRECT_URL` | Neon direct URL (no `-pooler` host) |
+| `JWT_SECRET` | Long random string |
+| `JWT_EXPIRES_IN` | `7d` |
+| `CRON_SECRET` | Random string for daily staking cron |
+| `CORS_ORIGIN` | `https://your-app.vercel.app` (or custom domain) |
+| `FLUTTERWAVE_PUBLIC_KEY` | Optional |
+| `FLUTTERWAVE_SECRET_KEY` | Optional |
+| `FLUTTERWAVE_WEBHOOK_SECRET` | Optional |
+| `FLUTTERWAVE_ENCRYPTION_KEY` | Optional |
+
+Leave `NEXT_PUBLIC_API_URL` unset on Vercel — the frontend calls `/api` on the same domain.
+
+### 3. Database
+
+Run migrations against Neon before first deploy:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+### 4. Flutterwave webhook
+
+Set webhook URL to `https://your-app.vercel.app/api/webhooks/flutterwave`.
+
+### 5. Deploy
+
+Click **Deploy**. Cron runs daily at 02:00 UTC (`/api/cron/staking-rewards`) on Vercel Pro; Hobby supports cron with limits.
+
 ## Docker
 
 ```bash

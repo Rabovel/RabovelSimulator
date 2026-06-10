@@ -2,6 +2,10 @@
   "name": "@rabovel/api",
   "version": "1.0.0",
   "private": true,
+  "exports": {
+    ".": "./dist/index.js",
+    "./vercel": "./dist/vercel.js"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -9,6 +13,7 @@
   },
   "dependencies": {
     "@rabovel/db": "*",
+    "@vercel/node": "^3.2.29",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
