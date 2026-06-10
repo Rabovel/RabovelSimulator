@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* Rabovel brand palette — https://www.rabovel.com/ */
+@theme {
+  --color-background: #f0f8ff;
+  --color-foreground: #1d2430;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8f8f8;
+  --color-border: #d2d8e1;
+  --color-primary: #4a6cf7;
+  --color-primary-dark: #3958d4;
+  --color-accent: #34d399;
+  --color-muted: #788393;
+  --color-body: #959cb1;
+  --color-dark: #2c303b;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+input,
+select,
+textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  color: var(--color-foreground);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-body);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

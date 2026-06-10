@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WalletType {
+  PRIMARY
+  TRADING
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  PURCHASE
+  SALE
+  STAKE
+  UNSTAKE
+  REWARD
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum StakeStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RewardType {
+  STAKING_YIELD
+  REFERRAL
+  BONUS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole @default(USER)
+  mfaEnabled   Boolean  @default(false)
+  mfaSecret    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  kyc           Kyc?
+  wallets       Wallet[]
+  holdings      Holding[]
+  stakes        Stake[]
+  rewards       Reward[]
+  transactions  Transaction[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Kyc {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  status         KycStatus @default(NOT_STARTED)
+  documentType   String?
+  documentNumber String?
+  dateOfBirth    DateTime?
+  address        String?
+  submittedAt    DateTime?
+  verifiedAt     DateTime?
+  rejectionNote  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kyc")
+}
+
+model Wallet {
+  id        String     @id @default(cuid())
+  userId    String
+  balance   Decimal    @default(0) @db.Decimal(18, 2)
+  currency  String     @default("NGN")
+  type      WalletType @default(PRIMARY)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, type])
+  @@map("wallets")
+}
+
+model Holding {
+  id           String   @id @default(cuid())
+  userId       String
+  symbol       String
+  name         String
+  quantity     Decimal  @db.Decimal(18, 6)
+  avgPrice     Decimal  @db.Decimal(18, 2)
+  currentPrice Decimal  @db.Decimal(18, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stakes Stake[]
+
+  @@unique([userId, symbol])
+  @@map("holdings")
+}
+
+model Stake {
+  id        String      @id @default(cuid())
+  userId    String
+  holdingId String
+  amount    Decimal     @db.Decimal(18, 6)
+  apy       Decimal     @db.Decimal(5, 2)
+  startDate DateTime    @default(now())
+  endDate   DateTime?
+  status    StakeStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  holding Holding  @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  rewards Reward[]
+
+  @@map("stakes")
+}
+
+model Reward {
+  id            String     @id @default(cuid())
+  userId        String
+  stakeId       String?
+  amount        Decimal    @db.Decimal(18, 2)
+  type          RewardType
+  description   String?
+  distributedAt DateTime   @default(now())
+  createdAt     DateTime   @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stake Stake? @relation(fields: [stakeId], references: [id], onDelete: SetNull)
+
+  @@map("rewards")
+}
+
+model Transaction {
+  id          String            @id @default(cuid())
+  userId      String
+  walletId    String
+  type        TransactionType
+  amount      Decimal           @db.Decimal(18, 2)
+  status      TransactionStatus @default(PENDING)
+  externalRef String?           @unique
+  description String?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("transactions")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

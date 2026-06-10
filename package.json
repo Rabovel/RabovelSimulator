@@ -1,0 +1,22 @@
+{
+  "name": "rabovel-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @rabovel/api\" \"npm run dev -w @rabovel/web\"",
+    "dev:api": "npm run dev -w @rabovel/api",
+    "dev:web": "npm run dev -w @rabovel/web",
+    "build": "npm run build -w @rabovel/db && npm run build -w @rabovel/api && npm run build -w @rabovel/web",
+    "db:generate": "npm run generate -w @rabovel/db",
+    "db:push": "npm run push -w @rabovel/db",
+    "db:migrate": "npm run migrate -w @rabovel/db",
+    "db:seed": "npm run seed -w @rabovel/db"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
