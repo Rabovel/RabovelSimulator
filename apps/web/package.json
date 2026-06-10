@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel:deploy": "echo \"Run deploy from repo root: cd ../.. && npm run vercel:deploy\" && exit 1"
   },
   "dependencies": {
     "@rabovel/api": "*",
