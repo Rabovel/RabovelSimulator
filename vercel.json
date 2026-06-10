@@ -3,5 +3,11 @@
   "installCommand": "npm install",
   "buildCommand": "npm run db:generate && npm run build -w @rabovel/db && npm run build -w @rabovel/api && npm run build -w @rabovel/web",
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": "apps/web/.next",
+  "crons": [
+    {
+      "path": "/api/cron/staking-rewards",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

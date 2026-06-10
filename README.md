@@ -102,7 +102,7 @@ After seeding, admin: `admin@rabovel.com` / `password123` → `/admin/users` (KY
 
 ## Deploy on Vercel
 
-The Next.js app and Express API deploy together from `apps/web` (API runs as a serverless function).
+The Next.js app and Express API deploy together from `apps/web` (Express runs via the Next.js catch-all route at `src/pages/api/[[...path]].ts`).
 
 ### 1. Import repository
 

@@ -3,9 +3,6 @@
   "installCommand": "cd ../.. && npm install",
   "buildCommand": "cd ../.. && npm run db:generate && npm run build -w @rabovel/db && npm run build -w @rabovel/api && npm run build -w @rabovel/web",
   "framework": "nextjs",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
-  ],
   "crons": [
     {
       "path": "/api/cron/staking-rewards",

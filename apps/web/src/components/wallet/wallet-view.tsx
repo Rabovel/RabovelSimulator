@@ -236,7 +236,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 }
 
 export function WalletView() {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
   const depositRef = searchParams.get("deposit");

@@ -95,7 +95,7 @@ export function MobileHeader() {
 }
 
 export function BottomNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { user } = useAuth();
   const nav = user?.role === "ADMIN" ? adminNav : userNav;
 
@@ -132,7 +132,7 @@ export function BottomNav() {
 }
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "ADMIN";
 

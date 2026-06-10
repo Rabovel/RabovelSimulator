@@ -12,13 +12,13 @@ const ADMIN_HOME = "/admin/users";
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   useEffect(() => {
     if (loading || !user) return;
 
     const isAdmin = user.role === "ADMIN";
-    const onAdminRoute = pathname.startsWith(ADMIN_PREFIX);
+    const onAdminRoute = pathname?.startsWith(ADMIN_PREFIX) ?? false;
 
     if (isAdmin && !onAdminRoute) {
       router.replace(ADMIN_HOME);
@@ -42,7 +42,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   const isAdmin = user.role === "ADMIN";
-  const onAdminRoute = pathname.startsWith(ADMIN_PREFIX);
+  const onAdminRoute = pathname?.startsWith(ADMIN_PREFIX) ?? false;
   if ((isAdmin && !onAdminRoute) || (!isAdmin && onAdminRoute)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
