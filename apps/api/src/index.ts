@@ -1,12 +1,13 @@
 import { config, isFlutterwaveConfigured } from "./config";
 import app from "./app";
-import { wakeDatabase } from "@rabovel/db";
+import { wakeDatabase, startDatabaseKeepalive } from "@rabovel/db";
 import { startStakingRewardsJob } from "./jobs/stakingRewardsJob";
 
 async function checkDatabase() {
   const ready = await wakeDatabase();
   if (ready) {
     console.log("Database connected");
+    startDatabaseKeepalive();
   } else {
     console.warn(
       "Database not ready on startup — Neon may be waking up. Requests will retry automatically."
